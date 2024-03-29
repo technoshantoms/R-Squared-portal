@@ -24,9 +24,11 @@ interface Props {
 
 function Sessions({internalAccount, settings}: Props) {
     const [sessions, setSessions] = useState<Session[]>([]);
+    console.log("Sessions reloaded", internalAccount, sessions);
 
     useEffect(() => {
         async function loadSessions() {
+            console.log("Loading sessions");
             const query = new GetSessions(internalAccount);
             const sessionsOrError = await getSessionsHandler.execute(query);
 
