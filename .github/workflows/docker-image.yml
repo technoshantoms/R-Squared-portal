@@ -1,0 +1,61 @@
+name: Build and Push Docker Image
+
+on:
+    push:
+        branches:
+            - develop
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v2
+
+            - name: Set environment variables
+              id: vars
+              run: |
+                  REPO_SLUG="${{ github.event.repository.name }}"
+                  REPO_SLUG="${REPO_SLUG//_/-}"
+                  TAG="${{ github.sha }}"
+
+                  if [ "${{ github.ref }}" == "refs/heads/develop" ]; then
+                    ENV="develop"
+                  else
+                    ENV="develop"
+                  fi
+
+                  ECR="${REPO_SLUG}-${ENV}"
+                  IMAGE_NAME="${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${ECR}:latest"
+
+                  echo "REPO_SLUG=${REPO_SLUG}" >> $GITHUB_ENV
+                  echo "TAG=${TAG}" >> $GITHUB_ENV
+                  echo "ENV=${ENV}" >> $GITHUB_ENV
+                  echo "ECR=${ECR}" >> $GITHUB_ENV
+                  echo "IMAGE_NAME=${IMAGE_NAME}" >> $GITHUB_ENV
+
+            - name: Configure AWS credentials
+              uses: aws-actions/configure-aws-credentials@v2
+              with:
+                  aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+                  aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+                  aws-region: ${{ secrets.AWS_REGION }}
+
+            - name: Log in to Amazon ECR
+              id: login-ecr
+              run: |
+                  aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
+
+            - name: Build, tag, and push Docker image to ECR
+              env:
+                  IMAGE_NAME: ${{ env.IMAGE_NAME }}
+              run: |
+                  # Build the Docker image
+                  docker build --build-arg ENV=${{ env.ENV }} -t $IMAGE_NAME .
+
+                  # Push the Docker image to ECR
+                  docker push $IMAGE_NAME
+
+            - name: Log out from Amazon ECR
+              run: docker logout ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com

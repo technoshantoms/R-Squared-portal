@@ -1,0 +1,5 @@
+
+
+export const EES_BASE_URL = process.env.REACT_APP_EES_BASE_URL;
+export const REGISTRATION_SERVICE_BASE_URL = process.env.REACT_APP_REGISTRATION_SERVICE_BASE_URL;
+export const RECAPTCHA_KEY = process.env.REACT_APP_RECAPTCHA_KEY;
