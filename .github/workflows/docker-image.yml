@@ -3,31 +3,108 @@ name: Build and Push Docker Image
 on:
     push:
         branches:
-            - develop
+            - development
+            - production
 
 jobs:
-    build:
+    build-and-push-dev:
+        if: github.ref_name == 'development'
         runs-on: ubuntu-latest
 
         steps:
             - name: Checkout code
               uses: actions/checkout@v2
 
+            - name: Get the short SHA
+              run: echo "SHORT_SHA=${GITHUB_SHA::7}" >> $GITHUB_ENV
+
             - name: Set environment variables
               id: vars
               run: |
-                  REPO_SLUG="${{ github.event.repository.name }}"
+                  REPO_SLUG="r2_web3_portal"
                   REPO_SLUG="${REPO_SLUG//_/-}"
                   TAG="${{ github.sha }}"
-
-                  if [ "${{ github.ref }}" == "refs/heads/develop" ]; then
-                    ENV="develop"
-                  else
-                    ENV="develop"
-                  fi
-
+                  ENV="develop"
                   ECR="${REPO_SLUG}-${ENV}"
-                  IMAGE_NAME="${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${ECR}:latest"
+                  IMAGE_NAME="${{ secrets.AWS_ACCOUNT_ID_DEV }}.dkr.ecr.${{ secrets.AWS_REGION_DEV }}.amazonaws.com/${ECR}:${{ env.SHORT_SHA }}"
+
+                  echo "REPO_SLUG=${REPO_SLUG}" >> $GITHUB_ENV
+                  echo "TAG=${TAG}" >> $GITHUB_ENV
+                  echo "ENV=${ENV}" >> $GITHUB_ENV
+                  echo "ECR=${ECR}" >> $GITHUB_ENV
+                  echo "IMAGE_NAME=${IMAGE_NAME}" >> $GITHUB_ENV
+
+            - name: Configure AWS credentials
+              uses: aws-actions/configure-aws-credentials@v2
+              with:
+                  aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_DEV }}
+                  aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_DEV }}
+                  aws-region: ${{ secrets.AWS_REGION_DEV }}
+
+            - name: Log in to Amazon ECR
+              id: login-ecr
+              run: |
+                  aws ecr get-login-password --region ${{ secrets.AWS_REGION_DEV }} | docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID_DEV }}.dkr.ecr.${{ secrets.AWS_REGION_DEV }}.amazonaws.com
+
+            - name: Build, tag, and push Docker image to ECR
+              env:
+                  IMAGE_NAME: ${{ env.IMAGE_NAME }}
+              run: |
+                  # Download library
+                  cd $GITHUB_WORKSPACE/charting_library
+                  git clone --branch sources https://${{ secrets.GH_TOKEN }}@github.com/R-Squared-Project/charting_library.git
+                  cd $GITHUB_WORKSPACE
+
+                  # Build the Docker image
+                  docker build --build-arg ENV=${{ env.ENV }} -t $IMAGE_NAME .
+
+                  # Push the Docker image to ECR
+                  docker push $IMAGE_NAME
+
+            - name: Log out from Amazon ECR
+              run: docker logout ${{ secrets.AWS_ACCOUNT_ID_DEV }}.dkr.ecr.${{ secrets.AWS_REGION_DEV }}.amazonaws.com
+
+            - name: Replace image on manifest
+              env:
+                IMAGE_NAME: ${{ env.IMAGE_NAME }}
+              run: |
+                # Define a working directory within the GitHub workspace
+                mkdir -p $GITHUB_WORKSPACE/manifest
+                cd $GITHUB_WORKSPACE/manifest
+
+                git clone --branch ${{ env.ENV }} https://${{ secrets.GH_TOKEN }}@github.com/R-Squared-Project/r2_manifest.git
+                git config --global user.email "${{ secrets.GH_EMAIL }}"
+                git config --global user.name "${{ secrets.GH_USERNAME }}"
+
+                cd r2_manifest/k8s/${{ env.ENV }}/portal/
+                sed -i 's|^\(\s*image:\s*\).*|\1${{ env.IMAGE_NAME }}|' deployment.yaml
+
+                git status
+                git add deployment.yaml
+                git commit -m 'ci(auto): change portal ${{ env.ENV }} image to sha: ${{ env.SHORT_SHA }}'
+                git push origin ${{ env.ENV }}
+
+
+    build-and-push-prod:
+        if: github.ref_name == 'production'
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v2
+
+            - name: Get the short SHA
+              run: echo "SHORT_SHA=${GITHUB_SHA::7}" >> $GITHUB_ENV
+            
+            - name: Set environment variables
+              id: vars
+              run: |
+                  REPO_SLUG="r2_web3_portal"
+                  REPO_SLUG="${REPO_SLUG//_/-}"
+                  TAG="${{ github.sha }}"
+                  ENV="prod"
+                  ECR="${REPO_SLUG}-${ENV}"
+                  IMAGE_NAME="${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${ECR}:${{ env.SHORT_SHA }}"
 
                   echo "REPO_SLUG=${REPO_SLUG}" >> $GITHUB_ENV
                   echo "TAG=${TAG}" >> $GITHUB_ENV
@@ -51,6 +128,11 @@ jobs:
               env:
                   IMAGE_NAME: ${{ env.IMAGE_NAME }}
               run: |
+                  # Download library
+                  cd $GITHUB_WORKSPACE/charting_library
+                  git clone --branch sources https://${{ secrets.GH_TOKEN }}@github.com/R-Squared-Project/charting_library.git
+                  cd $GITHUB_WORKSPACE
+                                
                   # Build the Docker image
                   docker build --build-arg ENV=${{ env.ENV }} -t $IMAGE_NAME .
 
@@ -59,3 +141,23 @@ jobs:
 
             - name: Log out from Amazon ECR
               run: docker logout ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
+
+            - name: Replace image on manifest
+              env:
+                IMAGE_NAME: ${{ env.IMAGE_NAME }}
+              run: |
+                # Define a working directory within the GitHub workspace
+                mkdir -p $GITHUB_WORKSPACE/manifest
+                cd $GITHUB_WORKSPACE/manifest
+
+                git clone --branch ${{ env.ENV }} https://${{ secrets.GH_TOKEN }}@github.com/R-Squared-Project/r2_manifest.git
+                git config --global user.email "${{ secrets.GH_EMAIL }}"
+                git config --global user.name "${{ secrets.GH_USERNAME }}"
+
+                cd r2_manifest/k8s/${{ env.ENV }}/portal/
+                sed -i 's|^\(\s*image:\s*\).*|\1${{ env.IMAGE_NAME }}|' deployment.yaml
+
+                git status
+                git add deployment.yaml
+                git commit -m 'ci(auto): change portal ${{ env.ENV }} image to sha: ${{ env.SHORT_SHA }}'
+                git push origin ${{ env.ENV }}                
