@@ -2,7 +2,11 @@ import {getFaucet, getTestFaucet} from "../branding";
 import {
     EES_BASE_URL,
     RECAPTCHA_KEY,
-    REGISTRATION_SERVICE_BASE_URL
+    REGISTRATION_SERVICE_BASE_URL,
+    DEFAULT_WS_NODE,
+    WS_NODE_LIST_URL_NODE1,
+    WS_NODE_LIST_URL_NODE2,
+    WS_NODE_LIST_URL_NODE3
 } from "./env.js";
 
 export const ioxbankAPIs = {
@@ -126,22 +130,22 @@ export const nodeRegions = [
 export const settingsAPIs = {
     // If you want a location to be translated, add the translation to settings in locale-xx.js
     // and use an object {translate: key} in WS_NODE_LIST
-    DEFAULT_WS_NODE: process.env.REACT_APP_DEFAULT_WS_NODE,
+    DEFAULT_WS_NODE: DEFAULT_WS_NODE,
     WS_NODE_LIST: [
         {
-            url: process.env.WS_NODE_LIST_URL_NODE1,
+            url: WS_NODE_LIST_URL_NODE1,
             location: "R-Squared Labs LLC node",
             region: "Northern America",
             country: "USA"
         },
         {
-            url: process.env.WS_NODE_LIST_URL_NODE2,
+            url: WS_NODE_LIST_URL_NODE2,
             location: "R-Squared Labs LLC node",
             region: "Asia",
             country: "India"
         },
         {
-            url: process.env.WS_NODE_LIST_URL_NODE3,
+            url: WS_NODE_LIST_URL_NODE3,
             location: "R-Squared Labs LLC node",
             region: "Northern America",
             country: "USA"
