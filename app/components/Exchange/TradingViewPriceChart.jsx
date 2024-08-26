@@ -1,5 +1,5 @@
 import React from "react";
-const TradingView = require("../../../charting_library/charting_library.esm");
+const TradingView = require("../../../charting_library/charting_library/charting_library.esm");
 import colors from "assets/colors";
 import {getResolutionsFromBuckets, getTVTimezone} from "./tradingViewClasses";
 import {Modal, Input, Table, Button, Icon} from "bitshares-ui-style-guide";
