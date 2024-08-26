@@ -206,7 +206,7 @@ class Preimage extends React.Component {
                     >
                         <Input
                             style={{
-                                width: "60%",
+                                width: "100%",
                                 color:
                                     hashMatch == null
                                         ? undefined
@@ -234,9 +234,9 @@ class Preimage extends React.Component {
                             }
                         />
                     </Tooltip>
-                    <Select
+                    {/*                     <Select
                         optionLabelProp={"value"}
-                        style={{width: "19.5%"}}
+                        style={{width: "25%"}}
                         onChange={this.onInputChanged.bind(this)}
                         value={this.props.preimage_cipher}
                     >
@@ -245,31 +245,7 @@ class Preimage extends React.Component {
                                 {cipher}
                             </Select.Option>
                         ))}
-                    </Select>
-                    <Tooltip
-                        title={counterpart.translate(
-                            "showcases.htlc.tooltip.new_random"
-                        )}
-                        mouseEnterDelay={0.5}
-                    >
-                        <Button
-                            type="primary"
-                            icon="deployment-unit"
-                            style={{verticalAlign: "top"}}
-                            onClick={this.generateRandom.bind(this)}
-                        />
-                    </Tooltip>
-                    <div style={{float: "right"}}>
-                        <CopyButton
-                            dataPlace="top"
-                            text={
-                                "preimage: " +
-                                this.props.preimage +
-                                " hash type: " +
-                                this.props.preimage_cipher
-                            }
-                        />
-                    </div>
+                    </Select> */}
                 </Input.Group>
 
                 <Input.Group className="content-block transfer-input preimage-row">
@@ -280,7 +256,7 @@ class Preimage extends React.Component {
                         mouseEnterDelay={0.5}
                     >
                         <Input
-                            style={{width: "78%"}}
+                            style={{width: "100%"}}
                             name="hash"
                             id="hash"
                             type="text"
@@ -292,36 +268,6 @@ class Preimage extends React.Component {
                             disabled={this.state.stage == 1}
                         />
                     </Tooltip>
-                    <Tooltip
-                        title={counterpart.translate(
-                            "showcases.htlc.tooltip.preimage_size"
-                        )}
-                        mouseEnterDelay={0.5}
-                    >
-                        <Input
-                            style={{width: "53px", marginRight: "0.2rem"}}
-                            name="size"
-                            id="size"
-                            type="text"
-                            onChange={this.onSizeChanged.bind(this)}
-                            value={this.props.preimage_size || ""}
-                            placeholder={counterpart.translate(
-                                "showcases.htlc.size"
-                            )}
-                            disabled={this.state.stage == 1}
-                        />
-                    </Tooltip>
-                    <div style={{float: "right"}}>
-                        <CopyButton
-                            dataPlace="top"
-                            text={
-                                "hash: " +
-                                this.props.preimage_hash +
-                                " preimage size: " +
-                                this.props.preimage_size
-                            }
-                        />
-                    </div>
                 </Input.Group>
             </Form.Item>
         );

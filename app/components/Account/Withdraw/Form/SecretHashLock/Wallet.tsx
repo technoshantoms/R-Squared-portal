@@ -140,7 +140,7 @@ export default function Wallet({onChange}: Props) {
                 <Input
                     className="field"
                     value={secretHashLockPair.hashLock}
-                    addonAfter={hashLockFieldButtons}
+                    //addonAfter={hashLockFieldButtons}
                     disabled
                 />
             </Form.Item>
