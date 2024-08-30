@@ -5,6 +5,7 @@ RUN yarn global add cross-env
 CMD mkdir /rsquared-portal
 WORKDIR /rsquared-portal
 
+ENV REACT_ENV=$REACT_ENV
 ADD package.json ./
 ADD yarn.lock ./
 ADD charting_library ./charting_library

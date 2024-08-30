@@ -56,7 +56,7 @@ jobs:
                   cd $GITHUB_WORKSPACE
 
                   # Build the Docker image
-                  docker build --build-arg ENV=${{ env.ENV }} -t $IMAGE_NAME .
+                  docker build --build-arg REACT_ENV=${{ env.ENV }} -t $IMAGE_NAME .
 
                   # Push the Docker image to ECR
                   docker push $IMAGE_NAME
