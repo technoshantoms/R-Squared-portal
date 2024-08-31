@@ -1,4 +1,4 @@
-const environment = process.env.ENV;
+const environment = process.env.REACT_ENV;
 
 let EES_BASE_URL;
 let REGISTRATION_SERVICE_BASE_URL;
