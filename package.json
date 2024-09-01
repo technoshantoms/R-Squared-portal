@@ -40,6 +40,7 @@
         "remove-english-locale-duplicates": "node ./app/assets/locales-remove-english-duplicates.js",
         "postfix-locale-files": "./node_modules/prettier/bin-prettier.js app/assets/locales/locale-*.json --write",
         "build": "cross-env NODE_ENV=production webpack --env prod",
+        "build-develop": "cross-env NODE_ENV=development webpack",
         "build-nougly": "cross-env NODE_ENV=production webpack --env prod --env noUgly",
         "build-hash": "cross-env NODE_ENV=production webpack --env prod --env hash --env baseUrl=false",
         "build-hash-nougly": "cross-env NODE_ENV=production webpack --env prod --env hash --env noUgly --env baseUrl=false",

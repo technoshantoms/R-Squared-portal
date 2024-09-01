@@ -5,14 +5,22 @@ RUN yarn global add cross-env
 CMD mkdir /rsquared-portal
 WORKDIR /rsquared-portal
 
-ENV REACT_ENV=$REACT_ENV
 ADD package.json ./
 ADD yarn.lock ./
 ADD charting_library ./charting_library
 RUN cross-env yarn install
 
 ADD . .
-RUN NODE_OPTIONS="--max-old-space-size=4096" yarn build
+
+ARG ENV
+
+RUN if [ "${ENV}" = "prod" ]; then \
+        echo "Building for production"; \
+        NODE_OPTIONS="--max-old-space-size=4096" yarn build; \
+    elif [ "${ENV}" = "develop" ]; then \
+        echo "Building for develop"; \
+        NODE_OPTIONS="--max-old-space-size=4096" yarn build-develop; \
+    fi
 
 FROM nginx:1.19 as run
 

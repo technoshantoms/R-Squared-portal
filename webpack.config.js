@@ -163,6 +163,15 @@ module.exports = function(env) {
             })
         );
     } else {
+        let outputDir = env.electron
+            ? "electron"
+            : env.hash
+            ? !baseUrl
+                ? "hash-history"
+                : `hash-history_${baseUrl.replace("/", "")}`
+            : "dist";
+        outputPath = path.join(root_dir, "build", outputDir);
+
         plugins.push(
             new webpack.DefinePlugin({
                 "process.env": {NODE_ENV: JSON.stringify("development")},
